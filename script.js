@@ -1,27 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Seleciona o botão de curtir (primeiro botão da barra de ações) e a imagem principal
-    const likeBtn = document.querySelector(".left-actions .action-btn, .action-btn");
+    // Seleciona os elementos principais da tela
+    const likeBtn = document.querySelector(".like-btn") || document.querySelector(".left-actions .action-btn");
     const postMedia = document.querySelector(".post-media");
-    const bookmarkBtn = document.querySelector(".bookmark-btn") || document.querySelector(".post-actions > .action-btn:last-child");
+    const bookmarkBtn = document.querySelector(".bookmark-btn");
     
     if (!likeBtn) return;
 
-    // Garante que o botão tenha um span interno para exibir o número de curtidas
+    // Procura ou cria o elemento de contagem de likes dentro do botão
     let likesCountSpan = likeBtn.querySelector(".likes-count");
     if (!likesCountSpan) {
-        const svgElement = likeBtn.querySelector("svg");
-        if (svgElement) {
-            const svgHTML = svgElement.outerHTML;
-            likeBtn.innerHTML = svgHTML + ' <span class="likes-count">0</span>';
-            likesCountSpan = likeBtn.querySelector(".likes-count");
-        }
+        // Se não existir, criamos o span dentro do botão sem destruir o SVG existente
+        likesCountSpan = document.createElement("span");
+        likesCountSpan.className = "likes-count";
+        likesCountSpan.textContent = "0";
+        likeBtn.appendChild(likesCountSpan);
     }
 
-    const likesTextCount = document.querySelector(".post-details .likes, .post-details");
+    const likesTextCount = document.querySelector(".likes-text-count") || document.querySelector(".post-details strong");
     
-    let baseLikes = 0;
+    // Variável que guarda o total de curtidas (começa em 0)
+    let totalLikes = 0;
 
-    // Formatação de números (ex: 1200 -> 1.2K)
+    // Formata números grandes (ex: 1200 -> 1.2K)
     function formatLikes(num) {
         if (num >= 1000) {
             return (num / 1000).toFixed(1) + "K";
@@ -29,62 +29,61 @@ document.addEventListener("DOMContentLoaded", () => {
         return num.toString();
     }
 
-    // Atualiza os contadores na tela
+    // Atualiza os valores na tela
     function updateDisplay() {
-        if (likesCountSpan) {
-            likesCountSpan.textContent = formatLikes(baseLikes);
-        }
-        if (likesTextCount) {
-            likesTextCount.innerHTML = `Liked by <strong>liam_beanz99</strong> and <strong>${baseLikes} others</strong>`;
+        likesCountSpan.textContent = formatLikes(totalLikes);
+        if (likesTextCount && likesTextCount !== likesCountSpan) {
+            likesTextCount.textContent = `${totalLikes} others`;
         }
     }
 
-    // Animação de zoom no ícone ao clicar
+    // Animação visual de zoom no ícone
     function animateIcon(svgElement) {
         if (!svgElement) return;
-        svgElement.style.transform = "scale(1.3)";
+        svgElement.style.transform = "scale(1.4)";
         setTimeout(() => {
             svgElement.style.transform = "scale(1)";
         }, 150);
     }
 
-    // Adiciona estilos essenciais via JS para garantir que o coração fique vermelho e animado
-    const dynamicStyle = document.createElement("style");
-    dynamicStyle.innerHTML = `
-        .action-btn.liked svg, 
-        .left-actions .action-btn:first-child.liked svg {
-            fill: #ef4444 !important;
-            stroke: #ef4444 !important;
-        }
-        .action-btn svg {
-            transition: transform 0.15s ease;
-        }
-    `;
-    document.head.appendChild(dynamicStyle);
-
-    // Função principal de incremento
-    function addLike() {
-        baseLikes++;
-        likeBtn.classList.add("liked");
-        updateDisplay();
-        animateIcon(likeBtn.querySelector("svg"));
+    // Garante que o CSS de coração vermelho esteja ativo
+    if (!document.getElementById("dynamic-like-style")) {
+        const styleTag = document.createElement("style");
+        styleTag.id = "dynamic-like-style";
+        styleTag.innerHTML = `
+            .action-btn.liked svg, 
+            .like-btn.liked svg {
+                fill: #ef4444 !important;
+                stroke: #ef4444 !important;
+            }
+            .action-btn svg, .like-btn svg {
+                transition: transform 0.15s ease;
+            }
+        `;
+        document.head.appendChild(styleTag);
     }
 
-    // Evento de clique no botão do coração (Soma +1 a cada clique)
-    likeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        addLike();
-    });
+    // Função central que incrementa os likes (usada tanto pelo botão quanto pela foto)
+    function handleLikeAction(e) {
+        if (e) e.stopPropagation();
+        
+        totalLikes++;                  // Adiciona +1 a cada clique
+        likeBtn.classList.add("liked"); // Deixa o coração vermelho
+        updateDisplay();               // Atualiza os números na tela
+        
+        const svgEl = likeBtn.querySelector("svg");
+        animateIcon(svgEl);            // Dá o efeito de pulso
+    }
 
-    // Evento de clique na imagem principal (Soma +1 a cada clique)
+    // Adiciona o evento de clique direto no botão do coração
+    likeBtn.addEventListener("click", handleLikeAction);
+
+    // Adiciona o evento de clique na imagem principal do post
     if (postMedia) {
-        postMedia.addEventListener("click", (e) => {
-            e.stopPropagation();
-            addLike();
-        });
+        postMedia.addEventListener("click", handleLikeAction);
     }
 
-    // Funcionalidade opcional para o botão de salvar (Bookmark)
+    // Funcionalidade opcional do botão de salvar (Bookmark)
     if (bookmarkBtn) {
         let isBookmarked = false;
         bookmarkBtn.addEventListener("click", (e) => {
@@ -99,6 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Inicializa o contador zerado na tela
+    // Inicializa o visor zerado
     updateDisplay();
 });
