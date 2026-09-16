@@ -187,3 +187,15 @@ body {
   stroke-width: 2;
 }
 
+.action-btn.liked svg {
+  fill: #ef4444;
+  stroke: #ef4444;
+}
+
+.action-btn svg {
+  transition: transform 0.15s ease;
+}
+
+.bookmark-btn.bookmarked svg {
+  fill: #ffffff;
+}
