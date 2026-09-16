@@ -8,9 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!likeBtn) return;
 
     let baseLikes = 0;
-    let isLiked = false;
 
-    // Função para formatar números (ex: 1200 -> 1.2K)
+    // Formatação de números (ex: 1200 -> 1.2K)
     function formatLikes(num) {
         if (num >= 1000) {
             return (num / 1000).toFixed(1) + "K";
@@ -18,13 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return num.toString();
     }
 
-    // Atualiza a tela com o valor atual dos likes
+    // Atualiza a interface
     function updateDisplay() {
         if (likesCountSpan) likesCountSpan.textContent = formatLikes(baseLikes);
         if (likesTextCount) likesTextCount.textContent = `${baseLikes} others`;
     }
 
-    // Animação de zoom no ícone
+    // Efeito de animação de zoom nos ícones
     function animateIcon(svgElement) {
         if (!svgElement) return;
         svgElement.style.transform = "scale(1.4)";
@@ -33,43 +32,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 150);
     }
 
-    // Ação de Curtir
-    function likePost() {
+    // Função que apenas soma e ativa o visual vermelho
+    function addLike() {
         baseLikes++;
-        isLiked = true;
         likeBtn.classList.add("liked");
         updateDisplay();
         animateIcon(likeBtn.querySelector("svg"));
     }
 
-    // Ação de Descurtir
-    function unlikePost() {
-        baseLikes = Math.max(0, baseLikes - 1);
-        isLiked = false;
-        likeBtn.classList.remove("liked");
-        updateDisplay();
-        animateIcon(likeBtn.querySelector("svg"));
-    }
-
-    // Clique no Botão de Curtida (Alterna entre curtir e descurtir)
+    // Clique no botão de coração (Soma +1 a cada clique)
     likeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (isLiked) {
-            unlikePost();
-        } else {
-            likePost();
-        }
+        addLike();
     });
 
-    // Clique na Imagem Principal (Sempre adiciona uma curtida se não estiver curtido, ou pode curtir livremente)
+    // Clique na imagem principal (Soma +1 a cada clique)
     if (postMedia) {
         postMedia.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (!isLiked) {
-                likePost();
-            } else {
-                unlikePost(); // Ou remova o else se quiser que clique na foto apenas adicione likes
-            }
+            addLike();
         });
     }
 
@@ -84,6 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Inicializa zerado
+    // Inicializa o contador zerado
     updateDisplay();
 });
